@@ -86,14 +86,12 @@ async fn try_notify(config: &Config, session_file: &str, user_id: &UserId, messa
         }
     }
 
-    // write!(OpenOptions::new().create(true).write(true).truncate(true).open("./out.log")?, "Rooms: {:#?}", rooms)?;
     if target_room.is_none() {
         println!("[mnot] No room with the specified name.");
         exit(1);
     }
     let room = target_room.unwrap();
 
-    // Format the message
     let success = send_loop(&room, message).await;
     Ok(success)
 }
