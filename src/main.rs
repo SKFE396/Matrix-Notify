@@ -29,7 +29,7 @@ async fn send_loop(room: &Room, message: &str) -> bool {
         match room.send(message.clone()).await {
             Ok(_) => return true,
             Err(e) => {
-                println!("[mnot] [{}] failed: {:?}", i + 1, e);
+                println!("[mnotify] [{}] failed: {:?}", i + 1, e);
             }
         }
         sleep(Duration::from_secs(1)).await;
@@ -59,19 +59,19 @@ async fn try_notify(config: &Config, session_file: &str, user_id: &UserId, messa
     let mut need_auth = true;
     if let Ok(session) = load_session(&session_file) {
         if let Err(e) = client.restore_session(session).await {
-            println!("[mnot] Error restoring session: {:?}", e);
+            println!("[mnotify] Error restoring session: {:?}", e);
         } else {
             need_auth = false;
         }
     } else {
-        println!("[mnot] Cannot load the session file.");
+        println!("[mnotify] Cannot load the session file.");
     }
     if need_auth {
         client.matrix_auth().login_username(user_id, &config.password).send().await?;
     }
     // Save session
     if let Err(e) = save_session(&session_file, client.session().expect("expected a session")) {
-        println!("[mnot] Failed to save the session: {:?}", e);
+        println!("[mnotify] Failed to save the session: {:?}", e);
     }
 
     // Start the main logic
@@ -87,7 +87,7 @@ async fn try_notify(config: &Config, session_file: &str, user_id: &UserId, messa
     }
 
     if target_room.is_none() {
-        println!("[mnot] No room with the specified name.");
+        println!("[mnotify] No room with the specified name.");
         exit(1);
     }
     let room = target_room.unwrap();
@@ -114,15 +114,15 @@ async fn main() -> anyhow::Result<()> {
                 exit(0);
             },
             Ok(false) => {
-                println!("[mnot] Trial {} failed. Retrying later.", t + 1);
+                println!("[mnotify] Trial {} failed. Retrying later.", t + 1);
             }
             Err(e) => {
-                println!("[mnot] Trial {} failed with error {:?}. Retrying later.", t + 1, e);
+                println!("[mnotify] Trial {} failed with error {:?}. Retrying later.", t + 1, e);
             },
         };
         sleep(Duration::from_secs(60)).await;
     }
-    println!("[mnot] Failed to send the notification. Giving up.");
+    println!("[mnotify] Failed to send the notification. Giving up.");
 
     Ok(())
 }
